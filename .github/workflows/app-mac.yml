@@ -1,0 +1,58 @@
+name: Application Mac
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer les dépendances
+        run: pip install ".[dev]"
+
+      - name: Construire VID-Effects.app
+        run: pyinstaller --noconfirm packaging/vid_effects.spec
+
+      - name: Vérifier que l'application démarre
+        run: |
+          export VID_EFFECTS_DIR="$RUNNER_TEMP/effets"
+          dist/VID-Effects.app/Contents/MacOS/VID-Effects --navigateur > "$RUNNER_TEMP/app.log" 2>&1 &
+          PID=$!
+          for i in $(seq 1 90); do
+            if curl -sf -o /dev/null http://127.0.0.1:7860/; then echo "Démarrée en ${i}s"; kill $PID; exit 0; fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/app.log"
+          exit 1
+
+      - name: Compresser
+        # ditto garde les liens et attributs propres aux applications Mac.
+        run: ditto -c -k --keepParent dist/VID-Effects.app VID-Effects-mac.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VID-Effects-mac
+          path: VID-Effects-mac.zip
+
+      - name: Publier la dernière version
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete derniere-version --yes --cleanup-tag || true
+          gh release create derniere-version VID-Effects-mac.zip \
+            --title "VID-Effects (dernière version)" \
+            --notes "Construite automatiquement depuis ${GITHUB_SHA::7}. Télécharge VID-Effects-mac.zip, décompresse-le et glisse VID-Effects dans Applications." \
+            --target "$GITHUB_SHA" \
+            --latest
