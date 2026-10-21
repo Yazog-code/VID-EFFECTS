@@ -8,10 +8,16 @@ dependencies = [
     "pillow>=10",
     "moviepy>=2.1,<3",
     "imageio-ffmpeg>=0.5",
+    "gradio>=5,<7",
+    # Fenêtre d'application native sur Mac ; ailleurs, la page s'ouvre dans le navigateur.
+    "pywebview>=5; sys_platform == 'darwin'",
 ]
 
+[project.scripts]
+vid-effects = "vid_effects.__main__:main"
+
 [project.optional-dependencies]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "pyinstaller>=6"]
 
 [build-system]
 requires = ["setuptools>=68"]
