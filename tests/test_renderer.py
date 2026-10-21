@@ -57,3 +57,22 @@ def test_default_output_path_does_not_overwrite(tmp_path):
     assert first.name == "video_effets.mp4"
     first.touch()
     assert default_output_path(tmp_path / "video.mov", tmp_path / "rendus").name == "video_effets_2.mp4"
+
+
+def test_temp_audio_is_not_written_to_current_dir(sample_video, registry, tmp_path, monkeypatch):
+    # Une app lancée depuis le Finder a « / » (lecture seule) comme dossier courant.
+    from moviepy.video.VideoClip import VideoClip
+
+    calls = []
+    original = VideoClip.write_videofile
+
+    def spy(self, *args, **kwargs):
+        calls.append(kwargs)
+        return original(self, *args, **kwargs)
+
+    monkeypatch.setattr(VideoClip, "write_videofile", spy)
+    cwd = tmp_path / "cwd"
+    cwd.mkdir()
+    monkeypatch.chdir(cwd)
+    render(sample_video, tmp_path / "out.mp4", [Step("Noir et blanc")], registry)
+    assert calls[0]["temp_audiofile_path"] not in ("", ".", str(cwd))

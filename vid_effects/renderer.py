@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import tempfile
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -76,6 +77,9 @@ def render(
             audio_codec="aac",
             # yuv420p pour que la vidéo se lise partout (QuickTime, iPhone...).
             ffmpeg_params=["-pix_fmt", "yuv420p"],
+            # Par défaut MoviePy écrit le son temporaire dans le dossier courant,
+            # qui est « / » (lecture seule) pour une app lancée depuis le Finder.
+            temp_audiofile_path=tempfile.gettempdir(),
             logger=_ProgressLogger(report) if progress else None,
         )
     finally:

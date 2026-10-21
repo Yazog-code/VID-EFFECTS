@@ -24,6 +24,12 @@ jobs:
       - name: Construire VID-Effects.app
         run: pyinstaller --noconfirm packaging/vid_effects.spec
 
+      - name: Signer l'application (signature ad hoc)
+        # Sans signature valide, macOS affiche « VID-Effects est endommagé ».
+        run: |
+          codesign --force --deep --sign - dist/VID-Effects.app
+          codesign --verify --deep --strict --verbose=2 dist/VID-Effects.app
+
       - name: Vérifier que l'application démarre
         run: |
           export VID_EFFECTS_DIR="$RUNNER_TEMP/effets"

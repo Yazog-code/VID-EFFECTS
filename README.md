@@ -7,9 +7,11 @@ Les effets sont de simples fichiers Python, ce qui permet d'en ajouter facilemen
 
 1. Télécharge **[VID-Effects-mac.zip](https://github.com/Yazog-code/VID-EFFECTS/releases/latest/download/VID-Effects-mac.zip)** (toujours la dernière version).
 2. Double-clique sur le zip, puis glisse **VID-Effects** dans le dossier **Applications**.
-3. Au premier lancement, macOS bloque l'application, parce qu'elle n'est pas signée par Apple :
-   - ouvre **Réglages Système → Confidentialité et sécurité**, descends jusqu'au message sur VID-Effects et clique sur **Ouvrir quand même** ;
-   - ou, dans le Terminal : `xattr -dr com.apple.quarantine /Applications/VID-Effects.app`
+3. Au premier lancement, macOS bloque l'application parce qu'elle n'est pas signée par Apple (message « est endommagé » ou « impossible de vérifier le développeur »). Ouvre le Terminal et colle :
+
+   ```
+   xattr -dr com.apple.quarantine /Applications/VID-Effects.app
+   ```
 
    C'est à faire une seule fois. Rien d'autre n'est à installer : Python et FFmpeg sont inclus.
 
